@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Schedule Tracker</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <main class="container">
+        <!-- Section 1: The Schedule Tracker -->
+        <section class="schedule-section">
+            <div class="header">
+                <h1>My Schedule</h1>
+                <div class="header-controls">
+                    <button id="theme-toggle-btn" title="Toggle Theme">◐</button>
+                    <input type="date" id="date-picker">
+                </div>
+            </div>
+
+            <div class="schedule-list-header">
+                <span class="task-col">Task</span>
+                <span class="time-col">Start Time</span>
+                <span class="time-col">End Time</span>
+                <span class="status-col">Status</span>
+            </div>
+
+            <div id="schedule-list-body">
+                <!-- JS will generate schedule items here -->
+            </div>
+        </section>
+
+        <!-- Section 2: The Monthly Report -->
+        <section class="report-section">
+            <div class="header">
+                <h2>Monthly Report</h2>
+            </div>
+            <div class="report-controls">
+                <select id="report-month"></select>
+                <select id="report-year"></select>
+                <button id="generate-report-btn">Generate Report</button>
+            </div>
+            
+            <div class="report-content">
+                <div id="no-report-data" style="display: none;">
+                    <p>No data tracked for the selected month.</p>
+                </div>
+                <div class="chart-container">
+                    <canvas id="report-chart"></canvas>
+                </div>
+                <div id="report-details">
+                    <!-- JS will generate report details here -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <script src="script.js"></script>
+</body>
+</html>

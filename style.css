@@ -1,0 +1,133 @@
+/* --- Imports & Global Settings --- */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&display=swap');
+
+/* --- THEME VARIABLES --- */
+:root { /* Dark Theme */
+    --bg-color: #0A192F;
+    --container-bg: #172A45;
+    --text-primary: #CCD6F6;
+    --text-secondary: #8892B0;
+    --text-header: #FFFFFF;
+    --accent-color: #64FFDA;
+    --border-color: #303C55;
+    --pie-border-color: var(--container-bg);
+}
+
+body.light-theme { /* Light Theme */
+    --bg-color: #F4F7F9;
+    --container-bg: #FFFFFF;
+    --text-primary: #333333;
+    --text-secondary: #555555;
+    --text-header: #000000;
+    --accent-color: #007BFF;
+    --border-color: #D9E8F5;
+    --pie-border-color: var(--container-bg);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    padding: 40px 20px;
+    min-height: 100vh;
+    transition: background-color 0.3s ease;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+section {
+    background-color: var(--container-bg);
+    padding: 30px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+    transition: background-color 0.3s ease, border 0.3s ease;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
+}
+
+h1, h2 { color: var(--text-header); font-weight: 700; }
+.header-controls { display: flex; align-items: center; gap: 15px; }
+
+#theme-toggle-btn {
+    background: none; border: 1px solid var(--border-color); color: var(--text-secondary);
+    width: 38px; height: 38px; border-radius: 50%; font-size: 1.2rem;
+    cursor: pointer; display: flex; justify-content: center; align-items: center;
+    transition: all 0.2s ease;
+}
+#theme-toggle-btn:hover { background-color: var(--bg-color); color: var(--text-primary); }
+
+#date-picker {
+    background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-primary);
+    padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; font-family: 'Inter', sans-serif;
+    color-scheme: dark;
+}
+body.light-theme #date-picker { color-scheme: light; }
+
+/* Schedule List Styling */
+.schedule-list-header, .schedule-item {
+    display: flex;
+    align-items: center;
+    padding: 12px 15px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+.schedule-item {
+    text-transform: none;
+    letter-spacing: normal;
+    font-size: 0.95rem;
+    color: var(--text-primary);
+    border-top: 1px solid var(--border-color);
+}
+.task-col { flex: 3; font-weight: 500; }
+.time-col { flex: 2; }
+.status-col { flex: 1; text-align: center; }
+
+/* Status Button Styling */
+.status-buttons button {
+    background: none; border: none; font-size: 1.5rem; cursor: pointer;
+    opacity: 0.3; transition: opacity 0.2s ease, transform 0.2s ease;
+}
+.status-buttons button:hover { opacity: 0.7; transform: scale(1.1); }
+.status-buttons button.selected { opacity: 1; }
+
+/* Report Section */
+.report-controls { display: flex; gap: 15px; align-items: center; margin-bottom: 30px; }
+.report-controls select {
+    background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-primary);
+    padding: 10px 15px; border-radius: 6px; font-size: 1rem; font-family: 'Inter', sans-serif;
+}
+.report-controls button {
+    cursor: pointer; background: var(--accent-color);
+    border: none; color: #0A192F; /* Dark text on bright button */
+    font-weight: 700; padding: 11px 20px; border-radius: 6px;
+    transition: all 0.2s ease;
+}
+.report-controls button:hover { opacity: 0.85; }
+
+.report-content { display: flex; gap: 30px; align-items: center; }
+#no-report-data { width: 100%; text-align: center; padding: 50px; color: var(--text-secondary); }
+.chart-container { flex: 1; position: relative; min-height: 280px; max-width: 280px; }
+#report-details { flex: 1.5; background: var(--bg-color); padding: 20px; border-radius: 6px; }
+#report-details ul { list-style: none; padding: 0; }
+#report-details li { padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+#report-details li:last-child { border-bottom: none; }
+#report-details h4 { margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; }
+#report-details p { margin: 4px 0; font-size: 0.9rem; color: var(--text-secondary); }
+#report-details strong { color: var(--text-primary); font-weight: 500; }
