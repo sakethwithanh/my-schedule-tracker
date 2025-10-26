@@ -1,18 +1,14 @@
 document.addEventListener('DOMContentLoaded', () => {
     // --- IMPORTANT CONFIGURATION ---
-    const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/yydrn7866tvuv'; 
+    const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/yydrn7866tvuv';
     // --- END CONFIGURATION ---
 
     // --- DATA ---
     const schedule = [
-        { task: "Wakeup", start: "6:00 AM", end: "6:30 AM" },
-        { task: "GYM", start: "6:30 AM", end: "8:00 AM" },
-        { task: "Bath and Travel", start: "8:00 AM", end: "9:30 AM" },
-        { task: "Office", start: "9:30 AM", end: "6:30 PM or 7:00 PM" },
-        { task: "ML", start: "8:00 PM", end: "9:00 PM or 9:30 PM" },
-        { task: "Rest", start: "9:30 PM", end: "10:00 PM" },
-        { task: "DSA", start: "10:00 PM", end: "11:30 PM" },
-        { task: "Sleep", start: "11:30 PM", end: "6:00 AM" }
+        { task: "Wakeup", start: "6:00 AM", end: "6:30 AM" }, { task: "GYM", start: "6:30 AM", end: "8:00 AM" },
+        { task: "Bath and Travel", start: "8:00 AM", end: "9:30 AM" }, { task: "Office", start: "9:30 AM", end: "6:30 PM or 7:00 PM" },
+        { task: "ML", start: "8:00 PM", end: "9:00 PM or 9:30 PM" }, { task: "Rest", start: "9:30 PM", end: "10:00 PM" },
+        { task: "DSA", start: "10:00 PM", end: "11:30 PM" }, { task: "Sleep", start: "11:30 PM", end: "6:00 AM" }
     ];
 
     // --- DOM ELEMENTS ---
@@ -39,17 +35,13 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- TIME & UTILITY FUNCTIONS ---
     const getDateString = (date) => date.toISOString().split('T')[0];
     const parseTime = (timeStr) => {
-        const time = timeStr.split(' or ')[0].trim();
-        const [hm, modifier] = time.split(' ');
-        let [hours, minutes] = hm.split(':').map(Number);
-        if (hours === 12) hours = modifier === 'AM' ? 0 : 12;
-        else if (modifier === 'PM') hours += 12;
+        const time = timeStr.split(' or ')[0].trim(); let [hours, minutes] = time.split(' ')[0].split(':').map(Number);
+        if (time.includes('PM') && hours !== 12) hours += 12; if (time.includes('AM') && hours === 12) hours = 0;
         return hours * 60 + minutes;
     };
     const getTaskDurationInMinutes = (taskObject) => {
-        const startMinutes = parseTime(taskObject.start);
-        const endMinutes = parseTime(taskObject.end);
-        return endMinutes < startMinutes ? (1440 - startMinutes) + endMinutes : endMinutes - startMinutes;
+        const start = parseTime(taskObject.start); const end = parseTime(taskObject.end);
+        return end < start ? (1440 - start) + end : end - start;
     };
 
     // --- API-BASED DATA HANDLING ---
@@ -62,8 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!response.ok) throw new Error('Failed to fetch data');
             const data = await response.json();
             const formattedData = data.reduce((acc, row) => ({ ...acc, [row.task]: row.status }), {});
-            dailyDataCache[dateString] = formattedData;
-            return formattedData;
+            dailyDataCache[dateString] = formattedData; return formattedData;
         } catch (error) { console.error("Error loading data:", error); return {}; }
     };
 
@@ -74,123 +65,113 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('main-heading').textContent = dateString === getDateString(new Date()) ? "My Schedule" : `Schedule for ${dateString}`;
         schedule.forEach(item => {
             const status = dailyData[item.task] || 'pending';
-            const itemDiv = document.createElement('div');
-            itemDiv.className = 'schedule-item';
-            itemDiv.innerHTML = `
-                <span class="task-col">${item.task}</span>
-                <span class="time-col">${item.start}</span>
-                <span class="time-col">${item.end}</span>
-                <span class="status-col">
-                    <div class="status-buttons" data-task="${item.task}">
-                        <button class="done-btn ${status === 'done' ? 'selected' : ''}" title="Done">✔️</button>
-                        <button class="fail-btn ${status === 'fail' ? 'selected' : ''}" title="Not Done">❌</button>
-                    </div>
-                </span>`;
+            const itemDiv = document.createElement('div'); itemDiv.className = 'schedule-item';
+            itemDiv.innerHTML = `<span class="task-col">${item.task}</span><span class="time-col">${item.start}</span>
+                <span class="time-col">${item.end}</span><span class="status-col"><div class="status-buttons" data-task="${item.task}">
+                <button class="done-btn ${status === 'done' ? 'selected' : ''}" title="Done">✔️</button>
+                <button class="fail-btn ${status === 'fail' ? 'selected' : ''}" title="Not Done">❌</button>
+                </div></span>`;
             scheduleListBody.appendChild(itemDiv);
         });
         addEventListenersToButtons();
     };
-    
     const handleStatusClick = (e) => {
-        const button = e.target.closest('button');
-        const taskName = button.closest('.status-buttons').dataset.task;
+        const button = e.target.closest('button'); const taskName = button.closest('.status-buttons').dataset.task;
         const newStatus = !button.classList.contains('selected') ? (button.classList.contains('done-btn') ? 'done' : 'fail') : 'pending';
         updateTaskStatus(taskName, newStatus);
     };
     const addEventListenersToButtons = () => document.querySelectorAll('.status-buttons button').forEach(b => b.addEventListener('click', handleStatusClick));
-
     const updateTaskStatus = async (taskName, newStatus) => {
-        if (!SHEETDB_API_URL.includes('sheetdb.io')) {
-            alert('Error: SheetDB API URL is not configured in script.js');
-            return;
-        }
-        const dateString = datePickerEl.value;
-        const currentData = await loadDataForDate(dateString);
-        const recordExists = !!currentData[taskName];
-        const method = recordExists ? 'PATCH' : 'POST';
+        if (!SHEETDB_API_URL.includes('sheetdb.io')) { alert('Error: SheetDB API URL is not configured.'); return; }
+        const dateString = datePickerEl.value; const currentData = await loadDataForDate(dateString);
+        const recordExists = !!currentData[taskName]; const method = recordExists ? 'PATCH' : 'POST';
         const url = recordExists ? `${SHEETDB_API_URL}/task/${taskName}?date=${dateString}` : SHEETDB_API_URL;
         const body = recordExists ? { status: newStatus } : { data: { date: dateString, task: taskName, status: newStatus } };
-
         try {
             const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             if (!response.ok) throw new Error('Failed to save data');
-            delete dailyDataCache[dateString];
-            displayTasks(dateString);
+            delete dailyDataCache[dateString]; displayTasks(dateString);
         } catch (error) { console.error("Error saving data:", error); }
     };
 
     // --- REPORTING LOGIC ---
     const populateDateSelectors = () => {
         const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
-        const year = new Date().getFullYear();
-        months.forEach((m, i) => reportMonthEl.add(new Option(m, i + 1)));
-        reportMonthEl.value = new Date().getMonth() + 1;
-        for (let i = year; i >= year - 5; i--) reportYearEl.add(new Option(i, i));
+        const year = new Date().getFullYear(); months.forEach((m, i) => reportMonthEl.add(new Option(m, i + 1)));
+        reportMonthEl.value = new Date().getMonth() + 1; for (let i = year; i >= year - 5; i--) reportYearEl.add(new Option(i, i));
     };
-
     const generateReport = async () => {
-        const month = String(reportMonthEl.value).padStart(2, '0');
-        const year = reportYearEl.value;
+        const month = String(reportMonthEl.value).padStart(2, '0'); const year = reportYearEl.value;
         if (!SHEETDB_API_URL.includes("sheetdb.io")) return;
         try {
             const response = await fetch(`${SHEETDB_API_URL}/search?date=${year}-${month}*`);
             if (!response.ok) throw new Error("Failed to fetch report data");
-            const monthData = await response.json();
-            const perTaskData = {};
+            const monthData = await response.json(); const perTaskData = {};
             schedule.forEach(item => { perTaskData[item.task] = { done: 0, total: 0 }; });
             monthData.forEach(row => {
                 if (perTaskData[row.task] && row.status !== 'pending') {
-                    perTaskData[row.task].total++;
-                    if (row.status === 'done') perTaskData[row.task].done++;
+                    perTaskData[row.task].total++; if (row.status === 'done') perTaskData[row.task].done++;
                 }
             });
             const overallTotalTracked = Object.values(perTaskData).reduce((sum, task) => sum + task.total, 0);
-            const overallTotalDone = Object.values(perTaskData).reduce((sum, task) => sum + task.done, 0);
             if (overallTotalTracked === 0) {
-                noReportDataEl.style.display = 'block';
-                chartContainerEl.style.display = 'none';
-                reportDetailsEl.style.display = 'none';
-                if (reportChart) reportChart.destroy();
+                noReportDataEl.style.display = 'block'; chartContainerEl.style.display = 'none';
+                reportDetailsEl.style.display = 'none'; if (reportChart) reportChart.destroy();
             } else {
-                noReportDataEl.style.display = 'none';
-                chartContainerEl.style.display = 'block';
+                noReportDataEl.style.display = 'none'; chartContainerEl.style.display = 'block';
                 reportDetailsEl.style.display = 'block';
-                displayReportChart(overallTotalDone, overallTotalTracked);
+                displayReportChart(perTaskData); // UPDATED: Pass per-task data
                 displayReportDetails(perTaskData);
             }
         } catch (error) { console.error("Error generating report:", error); }
     };
-
     const displayReportDetails = (perTaskData) => {
-        let detailsHTML = '<ul>';
-        schedule.forEach(taskItem => {
-            const data = perTaskData[taskItem.task];
-            const totalHours = (getTaskDurationInMinutes(taskItem) * data.done) / 60;
+        let detailsHTML = '<ul>'; schedule.forEach(taskItem => {
+            const data = perTaskData[taskItem.task]; const totalHours = (getTaskDurationInMinutes(taskItem) * data.done) / 60;
             detailsHTML += `<li><h4>${taskItem.task}</h4><p><strong>Completed:</strong> ${data.done} of ${data.total} days</p><p><strong>Total Hours:</strong> ${totalHours.toFixed(1)} hrs</p></li>`;
         });
-        detailsHTML += '</ul>';
-        reportDetailsEl.innerHTML = detailsHTML;
+        detailsHTML += '</ul>'; reportDetailsEl.innerHTML = detailsHTML;
     };
 
-    const displayReportChart = (totalDone, totalTracked) => {
+    // --- UPDATED: BAR CHART LOGIC ---
+    const displayReportChart = (perTaskData) => {
         if (reportChart) reportChart.destroy();
-        const totalMissed = totalTracked - totalDone;
-        const completionPercentage = totalTracked > 0 ? (totalDone / totalTracked * 100) : 0;
+        
+        const labels = Object.keys(perTaskData);
+        const completionData = labels.map(task => {
+            const { done, total } = perTaskData[task];
+            return total > 0 ? (done / total) * 100 : 0;
+        });
+
         const computedStyles = getComputedStyle(document.body);
-        const textColor = computedStyles.getPropertyValue("--text-primary").trim();
-        const borderColor = computedStyles.getPropertyValue("--pie-border-color").trim();
+        const accentColor = computedStyles.getPropertyValue('--accent-color').trim();
+        const gridColor = computedStyles.getPropertyValue('--border-color').trim();
+        const textColor = computedStyles.getPropertyValue('--text-primary').trim();
+        const barBgColor = getComputedStyle(document.querySelector('.report-controls button')).backgroundColor;
+
         reportChart = new Chart(reportChartCanvas, {
-            type: 'pie',
+            type: 'bar',
             data: {
-                labels: ['Completed', 'Missed'],
-                datasets: [{ data: [totalDone, totalMissed], backgroundColor: ['#4CAF50', '#F44336'], borderColor: borderColor, borderWidth: 3, hoverOffset: 10 }]
+                labels: labels,
+                datasets: [{
+                    label: 'Consistency %',
+                    data: completionData,
+                    backgroundColor: barBgColor,
+                    borderColor: accentColor,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                }]
             },
             options: {
-                responsive: true, maintainAspectRatio: false,
+                responsive: true, maintainAspectRatio: false, indexAxis: 'y', // Horizontal bars look better
+                scales: {
+                    y: { grid: { display: false }, ticks: { color: textColor, font: { family: "'Inter', sans-serif" } } },
+                    x: { beginAtZero: true, max: 100, grid: { color: gridColor }, ticks: { color: textColor, font: { family: "'Inter', sans-serif" }, callback: (v) => v + "%" } }
+                },
                 plugins: {
-                    legend: { position: 'top', labels: { color: textColor, font: { family: "'Poppins', sans-serif", size: 14 } } },
-                    title: { display: true, text: `Monthly Completion: ${completionPercentage.toFixed(1)}%`, color: textColor, font: { family: "'Poppins', sans-serif", size: 18 } },
-                    tooltip: { titleFont: { family: "'Poppins', sans-serif" }, bodyFont: { family: "'Poppins', sans-serif" }, callbacks: { label: c => ` ${c.label}: ${c.raw} tasks` } }
+                    legend: { display: false },
+                    title: { display: true, text: 'Monthly Task Consistency', color: textColor, font: { family: "'Inter', sans-serif", size: 18 } },
+                    tooltip: { callbacks: { label: c => ` Consistency: ${parseFloat(c.raw).toFixed(1)}%` } }
                 }
             }
         });
