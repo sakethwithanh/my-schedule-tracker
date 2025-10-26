@@ -4,16 +4,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- END CONFIGURATION ---
 
     // --- DATA ---
-    const schedule = [
-        { task: "Wakeup", start: "6:00 AM", end: "6:30 AM" }, { task: "GYM", start: "6:30 AM", end: "8:00 AM" },
-        { task: "Bath and Travel", start: "8:00 AM", end: "9:30 AM" }, { task: "Office", start: "9:30 AM", end: "6:30 PM or 7:00 PM" },
-        { task: "ML", start: "8:00 PM", end: "9:00 PM or 9:30 PM" }, { task: "Rest", start: "9:30 PM", end: "10:00 PM" },
-        { task: "DSA", start: "10:00 PM", end: "11:30 PM" }, { task: "Sleep", start: "11:30 PM", end: "6:00 AM" }
-    ];
+    // The schedule now starts empty. It will be loaded from the user's browser storage.
+    const defaultSchedule = [];
+    
+    // Load schedule from local storage or use the empty default
+    let schedule = JSON.parse(localStorage.getItem('userSchedule')) || defaultSchedule;
+    const saveSchedule = () => localStorage.setItem('userSchedule', JSON.stringify(schedule));
 
     // --- DOM ELEMENTS ---
     const scheduleListBody = document.getElementById('schedule-list-body');
     const datePickerEl = document.getElementById('date-picker');
+    const addTaskForm = document.getElementById('add-task-form');
     const reportMonthEl = document.getElementById('report-month');
     const reportYearEl = document.getElementById('report-year');
     const generateReportBtn = document.getElementById('generate-report-btn');
@@ -60,27 +61,39 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- CORE DISPLAY & UPDATE LOGIC ---
     const displayTasks = async (dateString) => {
-        const dailyData = await loadDataForDate(dateString);
+        const dailyData = await loadDataForDate(dateString); // Fetches statuses for the selected day
         scheduleListBody.innerHTML = "";
         document.getElementById('main-heading').textContent = dateString === getDateString(new Date()) ? "My Schedule" : `Schedule for ${dateString}`;
-        schedule.forEach(item => {
-            const status = dailyData[item.task] || 'pending';
-            const itemDiv = document.createElement('div'); itemDiv.className = 'schedule-item';
-            itemDiv.innerHTML = `<span class="task-col">${item.task}</span><span class="time-col">${item.start}</span>
-                <span class="time-col">${item.end}</span><span class="status-col"><div class="status-buttons" data-task="${item.task}">
-                <button class="done-btn ${status === 'done' ? 'selected' : ''}" title="Done">✔️</button>
-                <button class="fail-btn ${status === 'fail' ? 'selected' : ''}" title="Not Done">❌</button>
-                </div></span>`;
-            scheduleListBody.appendChild(itemDiv);
-        });
-        addEventListenersToButtons();
+        
+        if (schedule.length === 0) {
+            scheduleListBody.innerHTML = `<div class="schedule-item-empty">No tasks defined. Add a task below to get started!</div>`;
+        } else {
+            schedule.forEach(item => {
+                const status = dailyData[item.task] || 'pending'; // Status is from daily data, defaults to pending
+                const itemDiv = document.createElement('div'); itemDiv.className = 'schedule-item';
+                itemDiv.innerHTML = `<span class="task-col">${item.task}</span>
+                    <span class="time-col">${item.start}</span>
+                    <span class="time-col">${item.end}</span>
+                    <span class="status-col">
+                        <div class="status-buttons" data-task="${item.task}">
+                            <button class="done-btn ${status === 'done' ? 'selected' : ''}" title="Done">✔️</button>
+                            <button class="fail-btn ${status === 'fail' ? 'selected' : ''}" title="Not Done">❌</button>
+                        </div>
+                    </span>
+                    <span class="actions-col">
+                        <button class="delete-task-btn" data-task="${item.task}" title="Delete Task">🗑️</button>
+                    </span>`;
+                scheduleListBody.appendChild(itemDiv);
+            });
+        }
     };
-    const handleStatusClick = (e) => {
-        const button = e.target.closest('button'); const taskName = button.closest('.status-buttons').dataset.task;
+
+    const handleStatusClick = (button) => {
+        const taskName = button.closest('.status-buttons').dataset.task;
         const newStatus = !button.classList.contains('selected') ? (button.classList.contains('done-btn') ? 'done' : 'fail') : 'pending';
         updateTaskStatus(taskName, newStatus);
     };
-    const addEventListenersToButtons = () => document.querySelectorAll('.status-buttons button').forEach(b => b.addEventListener('click', handleStatusClick));
+
     const updateTaskStatus = async (taskName, newStatus) => {
         if (!SHEETDB_API_URL.includes('sheetdb.io')) { alert('Error: SheetDB API URL is not configured.'); return; }
         const dateString = datePickerEl.value; const currentData = await loadDataForDate(dateString);
@@ -100,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const year = new Date().getFullYear(); months.forEach((m, i) => reportMonthEl.add(new Option(m, i + 1)));
         reportMonthEl.value = new Date().getMonth() + 1; for (let i = year; i >= year - 5; i--) reportYearEl.add(new Option(i, i));
     };
+    
     const generateReport = async () => {
         const month = String(reportMonthEl.value).padStart(2, '0'); const year = reportYearEl.value;
         if (!SHEETDB_API_URL.includes("sheetdb.io")) return;
@@ -114,69 +128,76 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             const overallTotalTracked = Object.values(perTaskData).reduce((sum, task) => sum + task.total, 0);
-            if (overallTotalTracked === 0) {
+            if (schedule.length === 0 || overallTotalTracked === 0) {
                 noReportDataEl.style.display = 'block'; chartContainerEl.style.display = 'none';
                 reportDetailsEl.style.display = 'none'; if (reportChart) reportChart.destroy();
             } else {
                 noReportDataEl.style.display = 'none'; chartContainerEl.style.display = 'block';
                 reportDetailsEl.style.display = 'block';
-                displayReportChart(perTaskData); // UPDATED: Pass per-task data
+                displayReportChart(perTaskData);
                 displayReportDetails(perTaskData);
             }
         } catch (error) { console.error("Error generating report:", error); }
     };
+    
     const displayReportDetails = (perTaskData) => {
         let detailsHTML = '<ul>'; schedule.forEach(taskItem => {
-            const data = perTaskData[taskItem.task]; const totalHours = (getTaskDurationInMinutes(taskItem) * data.done) / 60;
+            const data = perTaskData[taskItem.task] || { done: 0, total: 0 };
+            const totalHours = (getTaskDurationInMinutes(taskItem) * data.done) / 60;
             detailsHTML += `<li><h4>${taskItem.task}</h4><p><strong>Completed:</strong> ${data.done} of ${data.total} days</p><p><strong>Total Hours:</strong> ${totalHours.toFixed(1)} hrs</p></li>`;
         });
         detailsHTML += '</ul>'; reportDetailsEl.innerHTML = detailsHTML;
     };
 
-    // --- UPDATED: BAR CHART LOGIC ---
     const displayReportChart = (perTaskData) => {
         if (reportChart) reportChart.destroy();
-        
-        const labels = Object.keys(perTaskData);
+        const labels = schedule.map(t => t.task);
         const completionData = labels.map(task => {
-            const { done, total } = perTaskData[task];
-            return total > 0 ? (done / total) * 100 : 0;
+            const data = perTaskData[task] || { done: 0, total: 0 };
+            return data.total > 0 ? (data.done / data.total) * 100 : 0;
         });
-
         const computedStyles = getComputedStyle(document.body);
         const accentColor = computedStyles.getPropertyValue('--accent-color').trim();
         const gridColor = computedStyles.getPropertyValue('--border-color').trim();
         const textColor = computedStyles.getPropertyValue('--text-primary').trim();
         const barBgColor = getComputedStyle(document.querySelector('.report-controls button')).backgroundColor;
-
         reportChart = new Chart(reportChartCanvas, {
             type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Consistency %',
-                    data: completionData,
-                    backgroundColor: barBgColor,
-                    borderColor: accentColor,
-                    borderWidth: 1,
-                    borderRadius: 4,
-                }]
-            },
-            options: {
-                responsive: true, maintainAspectRatio: false, indexAxis: 'y', // Horizontal bars look better
-                scales: {
-                    y: { grid: { display: false }, ticks: { color: textColor, font: { family: "'Inter', sans-serif" } } },
-                    x: { beginAtZero: true, max: 100, grid: { color: gridColor }, ticks: { color: textColor, font: { family: "'Inter', sans-serif" }, callback: (v) => v + "%" } }
-                },
-                plugins: {
-                    legend: { display: false },
-                    title: { display: true, text: 'Monthly Task Consistency', color: textColor, font: { family: "'Inter', sans-serif", size: 18 } },
-                    tooltip: { callbacks: { label: c => ` Consistency: ${parseFloat(c.raw).toFixed(1)}%` } }
-                }
-            }
+            data: { labels: labels, datasets: [{ label: 'Consistency %', data: completionData, backgroundColor: barBgColor, borderColor: accentColor, borderWidth: 1, borderRadius: 4 }] },
+            options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { y: { grid: { display: false }, ticks: { color: textColor, font: { family: "'Inter', sans-serif" } } }, x: { beginAtZero: true, max: 100, grid: { color: gridColor }, ticks: { color: textColor, font: { family: "'Inter', sans-serif" }, callback: (v) => v + "%" } } }, plugins: { legend: { display: false }, title: { display: true, text: 'Monthly Task Consistency', color: textColor, font: { family: "'Inter', sans-serif", size: 18 } }, tooltip: { callbacks: { label: c => ` Consistency: ${parseFloat(c.raw).toFixed(1)}%` } } } }
         });
     };
     
+    // --- EVENT LISTENERS ---
+    addTaskForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const nameInput = document.getElementById('new-task-name');
+        const startInput = document.getElementById('new-task-start');
+        const endInput = document.getElementById('new-task-end');
+        const newTask = { task: nameInput.value.trim(), start: startInput.value.trim(), end: endInput.value.trim() };
+        if (newTask.task && newTask.start && newTask.end) {
+            if (schedule.some(t => t.task.toLowerCase() === newTask.task.toLowerCase())) {
+                alert('A task with this name already exists.'); return;
+            }
+            schedule.push(newTask); saveSchedule();
+            displayTasks(datePickerEl.value); generateReport();
+            addTaskForm.reset();
+        }
+    });
+
+    scheduleListBody.addEventListener('click', (e) => {
+        const statusButton = e.target.closest('.status-buttons button');
+        const deleteButton = e.target.closest('.delete-task-btn');
+        if (statusButton) { handleStatusClick(statusButton); } 
+        else if (deleteButton) {
+            const taskNameToDelete = deleteButton.dataset.task;
+            if (confirm(`Are you sure you want to delete the task "${taskNameToDelete}"?`)) {
+                schedule = schedule.filter(task => task.task !== taskNameToDelete);
+                saveSchedule(); displayTasks(datePickerEl.value); generateReport();
+            }
+        }
+    });
+
     // --- INITIALIZATION ---
     applyTheme(localStorage.getItem('theme') || 'dark');
     datePickerEl.value = getDateString(new Date());
