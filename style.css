@@ -158,9 +158,20 @@ input:focus, select:focus { outline: none; border-color: var(--accent-color-star
     .main-layout { gap: 16px; }
     section { padding: 16px; }
     .header { flex-direction: column; align-items: flex-start; gap: 12px; }
-    .task-main-info { flex-wrap: wrap; }
+    .task-main-info {
+        flex-wrap: wrap;
+        /* Add space on the right for the absolutely positioned delete button */
+        padding-right: 40px;
+    }
     .task-name-priority { flex-basis: 100%; order: 1; }
     .time-col { flex-basis: 50%; order: 2; text-align: left; }
     .status-col { flex-basis: 50%; order: 3; }
-    .actions-col { display: none; } /* Hide for simplicity on small screens */
+    
+    /* --- THIS IS THE FIX --- */
+    .actions-col {
+        /* display: none;  <-- This line was removed */
+        position: absolute;
+        top: 8px;
+        right: 8px;
+    }
 }
