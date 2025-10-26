@@ -3,134 +3,275 @@
 
 /* --- THEME VARIABLES --- */
 :root { /* Dark Theme */
-    --bg-color: #0A192F; --container-bg: #172A45; --text-primary: #CCD6F6;
-    --text-secondary: #8892B0; --text-header: #FFFFFF; --accent-color: #64FFDA;
+    --bg-color: #0A192F;
+    --container-bg: #172A45;
+    --container-light-bg: #233554;
+    --text-primary: #CCD6F6;
+    --text-secondary: #8892B0;
+    --text-header: #FFFFFF;
+    --accent-color: #64FFDA;
+    --accent-color-transparent: rgba(100, 255, 218, 0.1);
     --border-color: #303C55;
+    --shadow-color: rgba(2, 12, 27, 0.7);
+    --danger-color: #FF6B6B;
 }
 body.light-theme { /* Light Theme */
-    --bg-color: #F4F7F9; --container-bg: #FFFFFF; --text-primary: #333333;
-    --text-secondary: #555555; --text-header: #000000; --accent-color: #007BFF;
+    --bg-color: #F0F2F5;
+    --container-bg: #FFFFFF;
+    --container-light-bg: #F8F9FA;
+    --text-primary: #1D2129;
+    --text-secondary: #606770;
+    --text-header: #000000;
+    --accent-color: #007BFF;
+    --accent-color-transparent: rgba(0, 123, 255, 0.1);
     --border-color: #D9E8F5;
+    --shadow-color: rgba(100, 100, 100, 0.1);
+    --danger-color: #DC3545;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
+
 body {
-    font-family: 'Inter', sans-serif; background-color: var(--bg-color); color: var(--text-primary);
-    padding: 40px 20px; min-height: 100vh; transition: background-color 0.3s ease;
+    font-family: 'Inter', sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    padding: 40px 20px;
+    min-height: 100vh;
+    transition: background-color 0.3s ease, color 0.3s ease;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
-.container { max-width: 900px; margin: 0 auto; display: flex; flex-direction: column; gap: 40px; }
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
 section {
-    background-color: var(--container-bg); padding: 30px; border-radius: 8px;
-    border: 1px solid var(--border-color); transition: background-color 0.3s ease, border 0.3s ease;
+    background-color: var(--container-bg);
+    padding: 30px;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px -15px var(--shadow-color);
+    transition: background-color 0.3s ease, border 0.3s ease;
 }
+
+h1, h2 {
+    color: var(--text-header);
+    font-weight: 700;
+    letter-spacing: -0.5px;
+}
+
+/* --- Header & Top Controls --- */
 .header {
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 1px solid var(--border-color); padding-bottom: 20px; margin-bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    padding-bottom: 20px;
+    margin-bottom: 20px;
 }
-h1, h2 { color: var(--text-header); font-weight: 700; }
 .header-controls { display: flex; align-items: center; gap: 15px; }
+
 #theme-toggle-btn {
-    background: none; border: 1px solid var(--border-color); color: var(--text-secondary);
-    width: 38px; height: 38px; border-radius: 50%; font-size: 1.2rem; cursor: pointer;
-    display: flex; justify-content: center; align-items: center; transition: all 0.2s ease;
+    background: transparent;
+    border: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    font-size: 1.3rem;
+    cursor: pointer;
+    display: flex; justify-content: center; align-items: center;
+    transition: all 0.2s ease-in-out;
 }
-#theme-toggle-btn:hover { background-color: var(--bg-color); color: var(--text-primary); }
-#date-picker {
-    background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-primary);
-    padding: 8px 12px; border-radius: 6px; font-size: 0.9rem; font-family: 'Inter', sans-serif;
-    color-scheme: dark;
+#theme-toggle-btn:hover { background-color: var(--accent-color-transparent); color: var(--accent-color); }
+
+input[type="date"] {
+    background-color: var(--container-light-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-body.light-theme #date-picker { color-scheme: light; }
-.schedule-list-header, .schedule-item {
-    display: flex; align-items: center; padding: 12px 15px; color: var(--text-secondary);
-    font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px;
+body.light-theme input[type="date"] { color-scheme: light; }
+body.dark-theme input[type="date"] { color-scheme: dark; }
+input[type="date"]:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--accent-color-transparent);
+}
+
+/* --- Schedule List Styling --- */
+.schedule-list-header {
+    display: flex;
+    align-items: center;
+    padding: 0 15px 12px 15px;
+    color: var(--text-secondary);
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
 }
 .schedule-item {
-    text-transform: none; letter-spacing: normal; font-size: 0.95rem; color: var(--text-primary);
-    border-top: 1px solid var(--border-color);
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 8px;
+    transition: background-color 0.2s ease-in-out;
 }
+.schedule-item:not(:first-child) { border-top: 1px solid var(--border-color); }
+.schedule-item:hover { background-color: var(--container-light-bg); }
 .schedule-item-empty {
     text-align: center;
     padding: 40px 20px;
     color: var(--text-secondary);
     border-top: 1px solid var(--border-color);
+    font-style: italic;
 }
+
 .task-col { flex: 3; font-weight: 500; }
-.time-col { flex: 2; }
+.time-col { flex: 2; color: var(--text-secondary); }
 .status-col { flex: 1.5; text-align: center; }
 .actions-col { flex: 1; text-align: right; }
+
+/* --- Status & Action Buttons --- */
 .status-buttons button {
-    background: none; border: none; font-size: 1.5rem; cursor: pointer;
-    opacity: 0.3; transition: opacity 0.2s ease, transform 0.2s ease;
+    background: transparent; border: none; font-size: 1.5rem; cursor: pointer;
+    opacity: 0.35; transition: opacity 0.2s ease, transform 0.2s ease;
 }
-.status-buttons button:hover { opacity: 0.7; transform: scale(1.1); }
+.status-buttons button:hover { opacity: 0.8; transform: scale(1.15); }
 .status-buttons button.selected { opacity: 1; }
 .delete-task-btn {
-    background: none; border: none; color: var(--text-secondary); font-size: 1.2rem; cursor: pointer;
-    opacity: 0.4; transition: all 0.2s ease;
+    background: transparent; border: none; color: var(--text-secondary);
+    font-size: 1.2rem; cursor: pointer;
+    opacity: 0.5; transition: all 0.2s ease;
 }
-.delete-task-btn:hover { opacity: 1; color: #ff6b6b; transform: scale(1.15); }
+.delete-task-btn:hover { opacity: 1; color: var(--danger-color); transform: scale(1.2); }
+
+/* --- ADD TASK FORM (NEW DESIGN) --- */
 .add-task-container {
-    padding: 25px 15px 5px; border-top: 1px solid var(--border-color); margin-top: 15px;
+    padding: 25px 15px 5px;
+    border-top: 2px solid var(--border-color);
+    margin-top: 20px;
 }
-#add-task-form { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
-#add-task-form input {
-    flex: 1; min-width: 150px; background-color: var(--bg-color);
-    border: 1px solid var(--border-color); color: var(--text-primary);
-    padding: 10px 12px; border-radius: 6px; font-size: 0.9rem; font-family: 'Inter', sans-serif;
+#add-task-form { display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+#add-task-form input[type="text"] {
+    flex: 1;
+    min-width: 150px;
+    /* This is the fix for your issue: explicitly setting colors */
+    background-color: var(--bg-color);
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+    /* End fix */
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 0.95rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-#add-task-form button {
-    cursor: pointer; background: var(--accent-color); border: none; color: #0A192F;
-    font-weight: 700; padding: 11px 20px; border-radius: 6px; transition: all 0.2s ease;
+#add-task-form input[type="text"]::placeholder { color: var(--text-secondary); opacity: 0.8; }
+#add-task-form input[type="text"]:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--accent-color-transparent);
 }
-#add-task-form button:hover { opacity: 0.85; }
+#add-task-form button, .report-controls button {
+    cursor: pointer;
+    background: var(--accent-color);
+    border: none;
+    color: #0A192F; /* High contrast text for accent bg */
+    font-weight: 700;
+    padding: 13px 22px;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    font-size: 0.95rem;
+}
+#add-task-form button:hover, .report-controls button:hover { transform: translateY(-2px); filter: brightness(1.1); }
+
+/* --- Report Section --- */
 .report-controls { display: flex; gap: 15px; align-items: center; margin-bottom: 30px; flex-wrap: wrap; }
-.report-controls select, .report-controls button {
-    background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-primary);
-    padding: 10px 15px; border-radius: 6px; font-size: 1rem; font-family: 'Inter', sans-serif;
+.report-controls select {
+    background-color: var(--container-light-bg);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    padding: 12px 15px;
+    border-radius: 8px;
+    font-size: 1rem;
+    font-family: inherit;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
-.report-controls button {
-    cursor: pointer; background: var(--accent-color); border: none; color: #0A192F;
-    font-weight: 700; padding: 11px 20px;
+.report-controls select:focus {
+    outline: none;
+    border-color: var(--accent-color);
+    box-shadow: 0 0 0 3px var(--accent-color-transparent);
 }
-.report-controls button:hover { opacity: 0.85; }
-.report-content { display: flex; flex-direction: column; gap: 30px; align-items: center; }
-#no-report-data { width: 100%; text-align: center; padding: 50px; color: var(--text-secondary); }
-.chart-container { width: 100%; max-width: 700px; position: relative; min-height: 350px; }
-#report-details { width: 100%; background: var(--bg-color); padding: 20px; border-radius: 6px; }
+#report-details {
+    width: 100%;
+    background: var(--bg-color);
+    padding: 10px 20px;
+    border-radius: 8px;
+    border: 1px solid var(--border-color);
+}
 #report-details ul { list-style: none; padding: 0; }
-#report-details li { padding: 12px 0; border-bottom: 1px solid var(--border-color); }
+#report-details li {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid var(--border-color);
+}
 #report-details li:last-child { border-bottom: none; }
-#report-details h4 { margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; }
-#report-details p { margin: 4px 0; font-size: 0.9rem; color: var(--text-secondary); }
+#report-details h4 { margin: 0; color: var(--text-primary); font-weight: 500; font-size: 1rem; }
+#report-details p { margin: 0; text-align: right; font-size: 0.9rem; color: var(--text-secondary); }
 #report-details strong { color: var(--text-primary); font-weight: 500; }
 
-/* --- Responsive Styles for Mobile View --- */
-@media (max-width: 650px) {
+/* --- Responsive Styles for Mobile --- */
+@media (max-width: 768px) {
     body { padding: 20px 10px; }
     section { padding: 20px 15px; }
+
     .schedule-list-header { display: none; }
     .schedule-item {
-        display: flex; flex-direction: column; padding: 15px;
-        border-bottom: 1px solid var(--border-color); border-top: none;
+        flex-direction: column; padding: 15px;
+        border: 1px solid var(--border-color);
+        background-color: var(--container-light-bg);
     }
+    .schedule-item:not(:first-child) { border-top: 1px solid var(--border-color); }
     .task-col, .time-col, .status-col, .actions-col {
         flex: none; width: 100%; text-align: left;
         display: flex; justify-content: space-between;
-        align-items: center; padding: 6px 0;
+        align-items: center; padding: 8px 0;
     }
     .schedule-item .task-col {
-        font-size: 1.1rem; font-weight: 700;
-        justify-content: flex-start; padding-bottom: 10px;
+        font-size: 1.2rem; font-weight: 700;
+        justify-content: flex-start;
+        padding-bottom: 10px;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 5px;
     }
-    .schedule-item .time-col:nth-of-type(1)::before { content: "Start Time:"; font-weight: 500; color: var(--text-secondary); }
-    .schedule-item .time-col:nth-of-type(2)::before { content: "End Time:"; font-weight: 500; color: var(--text-secondary); }
-    .schedule-item .status-col::before { content: "Status:"; font-weight: 500; color: var(--text-secondary); }
-    .schedule-item .actions-col::before { content: "Action:"; font-weight: 500; color: var(--text-secondary); }
-    .status-col, .actions-col { padding: 12px 0 5px 0; }
-    .delete-task-btn { padding-right: 5px; }
+    .schedule-item .time-col, .schedule-item .status-col, .schedule-item .actions-col {
+        font-size: 0.95rem;
+    }
+    .schedule-item .time-col::before { content: attr(data-label); font-weight: 500; color: var(--text-secondary); }
+    .schedule-item .time-col:nth-of-type(1)::before { content: "Start:"; }
+    .schedule-item .time-col:nth-of-type(2)::before { content: "End:"; }
+    .schedule-item .status-col::before { content: "Status:"; }
+    .schedule-item .actions-col::before { content: "Action:"; }
+
     .report-controls { flex-direction: column; align-items: stretch; }
     .report-controls select, .report-controls button { width: 100%; }
+    
     #add-task-form { flex-direction: column; align-items: stretch; }
-    #add-task-form input, #add-task-form button { width: 100%; }
+    #add-task-form input[type="text"], #add-task-form button { width: 100%; }
+
+    #report-details li { grid-template-columns: 1fr; text-align: left; }
+    #report-details p { text-align: left; margin-top: 5px; }
 }
