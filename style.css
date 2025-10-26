@@ -49,49 +49,88 @@ body.light-theme #date-picker { color-scheme: light; }
     text-transform: none; letter-spacing: normal; font-size: 0.95rem; color: var(--text-primary);
     border-top: 1px solid var(--border-color);
 }
+.schedule-item-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+    border-top: 1px solid var(--border-color);
+}
 .task-col { flex: 3; font-weight: 500; }
 .time-col { flex: 2; }
-.status-col { flex: 1; text-align: center; }
+.status-col { flex: 1.5; text-align: center; }
+.actions-col { flex: 1; text-align: right; }
 .status-buttons button {
     background: none; border: none; font-size: 1.5rem; cursor: pointer;
     opacity: 0.3; transition: opacity 0.2s ease, transform 0.2s ease;
 }
 .status-buttons button:hover { opacity: 0.7; transform: scale(1.1); }
 .status-buttons button.selected { opacity: 1; }
-.report-controls { display: flex; gap: 15px; align-items: center; margin-bottom: 30px; }
-.report-controls select {
+.delete-task-btn {
+    background: none; border: none; color: var(--text-secondary); font-size: 1.2rem; cursor: pointer;
+    opacity: 0.4; transition: all 0.2s ease;
+}
+.delete-task-btn:hover { opacity: 1; color: #ff6b6b; transform: scale(1.15); }
+.add-task-container {
+    padding: 25px 15px 5px; border-top: 1px solid var(--border-color); margin-top: 15px;
+}
+#add-task-form { display: flex; gap: 15px; align-items: center; flex-wrap: wrap; }
+#add-task-form input {
+    flex: 1; min-width: 150px; background-color: var(--bg-color);
+    border: 1px solid var(--border-color); color: var(--text-primary);
+    padding: 10px 12px; border-radius: 6px; font-size: 0.9rem; font-family: 'Inter', sans-serif;
+}
+#add-task-form button {
+    cursor: pointer; background: var(--accent-color); border: none; color: #0A192F;
+    font-weight: 700; padding: 11px 20px; border-radius: 6px; transition: all 0.2s ease;
+}
+#add-task-form button:hover { opacity: 0.85; }
+.report-controls { display: flex; gap: 15px; align-items: center; margin-bottom: 30px; flex-wrap: wrap; }
+.report-controls select, .report-controls button {
     background-color: var(--bg-color); border: 1px solid var(--border-color); color: var(--text-primary);
     padding: 10px 15px; border-radius: 6px; font-size: 1rem; font-family: 'Inter', sans-serif;
 }
 .report-controls button {
     cursor: pointer; background: var(--accent-color); border: none; color: #0A192F;
-    font-weight: 700; padding: 11px 20px; border-radius: 6px; transition: all 0.2s ease;
+    font-weight: 700; padding: 11px 20px;
 }
 .report-controls button:hover { opacity: 0.85; }
-
-/* --- UPDATED REPORT LAYOUT --- */
-.report-content {
-    display: flex;
-    flex-direction: column; /* Stack items vertically */
-    gap: 30px;             /* Space between chart and details */
-    align-items: center;   /* Center them horizontally */
-}
+.report-content { display: flex; flex-direction: column; gap: 30px; align-items: center; }
 #no-report-data { width: 100%; text-align: center; padding: 50px; color: var(--text-secondary); }
-.chart-container {
-    width: 100%;
-    max-width: 700px; /* Prevent chart from being too wide on large screens */
-    position: relative;
-    min-height: 350px;
-}
-#report-details {
-    width: 100%;
-    background: var(--bg-color);
-    padding: 20px;
-    border-radius: 6px;
-}
+.chart-container { width: 100%; max-width: 700px; position: relative; min-height: 350px; }
+#report-details { width: 100%; background: var(--bg-color); padding: 20px; border-radius: 6px; }
 #report-details ul { list-style: none; padding: 0; }
 #report-details li { padding: 12px 0; border-bottom: 1px solid var(--border-color); }
 #report-details li:last-child { border-bottom: none; }
 #report-details h4 { margin: 0 0 8px 0; color: var(--text-primary); font-weight: 500; }
 #report-details p { margin: 4px 0; font-size: 0.9rem; color: var(--text-secondary); }
 #report-details strong { color: var(--text-primary); font-weight: 500; }
+
+/* --- Responsive Styles for Mobile View --- */
+@media (max-width: 650px) {
+    body { padding: 20px 10px; }
+    section { padding: 20px 15px; }
+    .schedule-list-header { display: none; }
+    .schedule-item {
+        display: flex; flex-direction: column; padding: 15px;
+        border-bottom: 1px solid var(--border-color); border-top: none;
+    }
+    .task-col, .time-col, .status-col, .actions-col {
+        flex: none; width: 100%; text-align: left;
+        display: flex; justify-content: space-between;
+        align-items: center; padding: 6px 0;
+    }
+    .schedule-item .task-col {
+        font-size: 1.1rem; font-weight: 700;
+        justify-content: flex-start; padding-bottom: 10px;
+    }
+    .schedule-item .time-col:nth-of-type(1)::before { content: "Start Time:"; font-weight: 500; color: var(--text-secondary); }
+    .schedule-item .time-col:nth-of-type(2)::before { content: "End Time:"; font-weight: 500; color: var(--text-secondary); }
+    .schedule-item .status-col::before { content: "Status:"; font-weight: 500; color: var(--text-secondary); }
+    .schedule-item .actions-col::before { content: "Action:"; font-weight: 500; color: var(--text-secondary); }
+    .status-col, .actions-col { padding: 12px 0 5px 0; }
+    .delete-task-btn { padding-right: 5px; }
+    .report-controls { flex-direction: column; align-items: stretch; }
+    .report-controls select, .report-controls button { width: 100%; }
+    #add-task-form { flex-direction: column; align-items: stretch; }
+    #add-task-form input, #add-task-form button { width: 100%; }
+}
