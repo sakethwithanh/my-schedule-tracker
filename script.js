@@ -1,8 +1,7 @@
 document.addEventListener('DOMContentLoaded', () => {
-    // --- ⬇️ IMPORTANT CONFIGURATION ⬇️ ---
-    // PASTE YOUR SHEETDB API URL BETWEEN THE QUOTES
+    // --- IMPORTANT CONFIGURATION ---
     const SHEETDB_API_URL = 'https://sheetdb.io/api/v1/yydrn7866tvuv'; 
-    // --- ⬆️ IMPORTANT CONFIGURATION ⬆️ ---
+    // --- END CONFIGURATION ---
 
     // --- DATA ---
     const schedule = [
@@ -57,7 +56,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let dailyDataCache = {}; 
     const loadDataForDate = async (dateString) => {
         if (dailyDataCache[dateString]) return dailyDataCache[dateString];
-        if (!SHEETDB_API_URL.includes('sheetdb.io')) return {}; // Don't fetch if URL is not set
+        if (!SHEETDB_API_URL.includes('sheetdb.io')) return {};
         try {
             const response = await fetch(`${SHEETDB_API_URL}/search?date=${dateString}`);
             if (!response.ok) throw new Error('Failed to fetch data');
@@ -113,24 +112,89 @@ document.addEventListener('DOMContentLoaded', () => {
         const body = recordExists ? { status: newStatus } : { data: { date: dateString, task: taskName, status: newStatus } };
 
         try {
-            const response = await fetch(url, {
-                method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body)
-            });
+            const response = await fetch(url, { method, headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
             if (!response.ok) throw new Error('Failed to save data');
-            delete dailyDataCache[dateString]; // Invalidate cache
+            delete dailyDataCache[dateString];
             displayTasks(dateString);
         } catch (error) { console.error("Error saving data:", error); }
     };
 
     // --- REPORTING LOGIC ---
-    const populateDateSelectors = () => { /* ... unchanged ... */ };
-    const generateReport = async () => { /* ... unchanged ... */ };
-    const displayReportDetails = (perTaskData) => { /* ... unchanged ... */ };
-    const displayReportChart = (totalDone, totalTracked) => { /* ... unchanged ... */ };
-    (populateDateSelectors=()=>{const e=["January","February","March","April","May","June","July","August","September","October","November","December"],t=(new Date).getFullYear();e.forEach(((e,t)=>{reportMonthEl.add(new Option(e,t+1))})),reportMonthEl.value=(new Date).getMonth()+1;for(let e=t;e>=t-5;e--)reportYearEl.add(new Option(e,e))})();
-    (generateReport=async()=>{const e=String(reportMonthEl.value).padStart(2,"0"),t=reportYearEl.value;if(!SHEETDB_API_URL.includes("sheetdb.io"))return;try{const s=await fetch(`${SHEETDB_API_URL}/search?date=${t}-${e}*`);if(!s.ok)throw new Error("Failed to fetch report data");const a=await s.json(),o={};schedule.forEach((e=>{o[e.task]={done:0,total:0}})),a.forEach((e=>{o[e.task]&&"pending"!==e.status&&(o[e.task].total++, "done"===e.status&&o[e.task].done++)}));const r=Object.values(o).reduce(((e,t)=>e+t.total),0),n=Object.values(o).reduce(((e,t)=>e+t.done),0);0===r?(noReportDataEl.style.display="block",chartContainerEl.style.display="none",reportDetailsEl.style.display="none",reportChart&&reportChart.destroy()):(noReportDataEl.style.display="none",chartContainerEl.style.display="block",reportDetailsEl.style.display="block",displayReportChart(n,r),displayReportDetails(o))}catch(e){console.error("Error generating report:",e)}})();
-    (displayReportDetails=e=>{let t="<ul>";schedule.forEach((s=>{const a=e[s.task],o=getTaskDurationInMinutes(s)*a.done/60;t+=`<li><h4>${s.task}</h4><p><strong>Completed:</strong> ${a.done} of ${a.total} days</p><p><strong>Total Hours:</strong> ${o.toFixed(1)} hrs</p></li>`})),t+="</ul>",reportDetailsEl.innerHTML=t})();
-    (displayReportChart=(e,t)=>{reportChart&&reportChart.destroy();const s=t-e,a=t>0?e/t*100:0,o=getComputedStyle(document.body),r=o.getPropertyValue("--text-primary").trim(),n=o.getPropertyValue("--pie-border-color").trim();reportChart=new Chart(reportChartCanvas,{type:"pie",data:{labels:["Completed","Missed"],datasets:[{data:[e,s],backgroundColor:["#4CAF50","#F44336"],borderColor:n,borderWidth:3,hoverOffset:10}]},options:{responsive:!0,maintainAspectRatio:!1,plugins:{legend:{position:"top",labels:{color:r,font:{family:"'Poppins', sans-serif",size:14}}},title:{display:!0,text:`Monthly Completion: ${a.toFixed(1)}%`,color:r,font:{family:"'Poppins', sans-serif",size:18}},tooltip:{titleFont:{family:"'Poppins', sans-serif"},bodyFont:{family:"'Poppins', sans-serif"},callbacks:{label:e=>` ${e.label}: ${e.raw} tasks`}}}}})})();
+    const populateDateSelectors = () => {
+        const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+        const year = new Date().getFullYear();
+        months.forEach((m, i) => reportMonthEl.add(new Option(m, i + 1)));
+        reportMonthEl.value = new Date().getMonth() + 1;
+        for (let i = year; i >= year - 5; i--) reportYearEl.add(new Option(i, i));
+    };
+
+    const generateReport = async () => {
+        const month = String(reportMonthEl.value).padStart(2, '0');
+        const year = reportYearEl.value;
+        if (!SHEETDB_API_URL.includes("sheetdb.io")) return;
+        try {
+            const response = await fetch(`${SHEETDB_API_URL}/search?date=${year}-${month}*`);
+            if (!response.ok) throw new Error("Failed to fetch report data");
+            const monthData = await response.json();
+            const perTaskData = {};
+            schedule.forEach(item => { perTaskData[item.task] = { done: 0, total: 0 }; });
+            monthData.forEach(row => {
+                if (perTaskData[row.task] && row.status !== 'pending') {
+                    perTaskData[row.task].total++;
+                    if (row.status === 'done') perTaskData[row.task].done++;
+                }
+            });
+            const overallTotalTracked = Object.values(perTaskData).reduce((sum, task) => sum + task.total, 0);
+            const overallTotalDone = Object.values(perTaskData).reduce((sum, task) => sum + task.done, 0);
+            if (overallTotalTracked === 0) {
+                noReportDataEl.style.display = 'block';
+                chartContainerEl.style.display = 'none';
+                reportDetailsEl.style.display = 'none';
+                if (reportChart) reportChart.destroy();
+            } else {
+                noReportDataEl.style.display = 'none';
+                chartContainerEl.style.display = 'block';
+                reportDetailsEl.style.display = 'block';
+                displayReportChart(overallTotalDone, overallTotalTracked);
+                displayReportDetails(perTaskData);
+            }
+        } catch (error) { console.error("Error generating report:", error); }
+    };
+
+    const displayReportDetails = (perTaskData) => {
+        let detailsHTML = '<ul>';
+        schedule.forEach(taskItem => {
+            const data = perTaskData[taskItem.task];
+            const totalHours = (getTaskDurationInMinutes(taskItem) * data.done) / 60;
+            detailsHTML += `<li><h4>${taskItem.task}</h4><p><strong>Completed:</strong> ${data.done} of ${data.total} days</p><p><strong>Total Hours:</strong> ${totalHours.toFixed(1)} hrs</p></li>`;
+        });
+        detailsHTML += '</ul>';
+        reportDetailsEl.innerHTML = detailsHTML;
+    };
+
+    const displayReportChart = (totalDone, totalTracked) => {
+        if (reportChart) reportChart.destroy();
+        const totalMissed = totalTracked - totalDone;
+        const completionPercentage = totalTracked > 0 ? (totalDone / totalTracked * 100) : 0;
+        const computedStyles = getComputedStyle(document.body);
+        const textColor = computedStyles.getPropertyValue("--text-primary").trim();
+        const borderColor = computedStyles.getPropertyValue("--pie-border-color").trim();
+        reportChart = new Chart(reportChartCanvas, {
+            type: 'pie',
+            data: {
+                labels: ['Completed', 'Missed'],
+                datasets: [{ data: [totalDone, totalMissed], backgroundColor: ['#4CAF50', '#F44336'], borderColor: borderColor, borderWidth: 3, hoverOffset: 10 }]
+            },
+            options: {
+                responsive: true, maintainAspectRatio: false,
+                plugins: {
+                    legend: { position: 'top', labels: { color: textColor, font: { family: "'Poppins', sans-serif", size: 14 } } },
+                    title: { display: true, text: `Monthly Completion: ${completionPercentage.toFixed(1)}%`, color: textColor, font: { family: "'Poppins', sans-serif", size: 18 } },
+                    tooltip: { titleFont: { family: "'Poppins', sans-serif" }, bodyFont: { family: "'Poppins', sans-serif" }, callbacks: { label: c => ` ${c.label}: ${c.raw} tasks` } }
+                }
+            }
+        });
+    };
     
     // --- INITIALIZATION ---
     applyTheme(localStorage.getItem('theme') || 'dark');
