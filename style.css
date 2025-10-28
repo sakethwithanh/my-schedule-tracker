@@ -1,35 +1,156 @@
-/* ... (paste all the previous CSS here) ... */
+/* Basic Reset & Body Styling */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-/* Chant Section Styles */
-.chant-section {
+body {
+    font-family: 'Poppins', sans-serif;
+    background: #f4f7f6;
+    color: #333;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    padding: 2rem;
+}
+
+/* Main Container */
+.container {
+    background: #fff;
+    width: 100%;
+    max-width: 600px;
+    padding: 2rem;
+    border-radius: 10px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+header {
     text-align: center;
-    margin-bottom: 25px;
-    padding: 20px;
-    background-color: #eaf5ff;
-    border: 1px dashed #3498db;
-    border-radius: 8px;
+    margin-bottom: 2rem;
 }
 
-#get-chant-btn {
-    background-color: #2ecc71;
-    color: white;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    margin-bottom: 15px;
-    transition: background-color 0.3s;
-}
-
-#get-chant-btn:hover {
-    background-color: #27ae60;
-}
-
-#chant-display {
-    font-style: italic;
+header h1 {
+    font-size: 2.5rem;
     color: #2c3e50;
-    line-height: 1.6;
-    min-height: 40px; /* Prevents layout shift */
+}
+
+/* Form Styling */
+#task-form {
+    display: flex;
+    gap: 0.5rem;
+    margin-bottom: 2rem;
+}
+
+#task-input {
+    flex-grow: 1;
+    padding: 0.75rem;
+    border: 2px solid #ddd;
+    border-radius: 5px;
+    font-size: 1rem;
+    transition: border-color 0.3s;
+}
+
+#task-input:focus {
+    outline: none;
+    border-color: #3498db;
+}
+
+#task-form button {
+    padding: 0.75rem 1.5rem;
+    border: none;
+    background: #3498db;
+    color: white;
+    font-size: 1rem;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.3s;
+}
+
+#task-form button:hover {
+    background: #2980b9;
+}
+
+/* Task List Styling */
+.task-list-container {
+    position: relative;
+    min-height: 50px; /* To show loader */
+}
+
+#task-list {
+    list-style: none;
+}
+
+#task-list li {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: #ecf0f1;
+    border-radius: 5px;
+    margin-bottom: 0.5rem;
+    transition: background 0.3s;
+}
+
+#task-list li.completed {
+    background: #e0f2e9;
+}
+
+#task-list li .task-text {
+    flex-grow: 1;
+    margin-right: 1rem;
+}
+
+#task-list li.completed .task-text {
+    text-decoration: line-through;
+    color: #95a5a6;
+}
+
+/* Action Buttons */
+#task-list li .actions {
+    display: flex;
+    gap: 0.5rem;
+}
+
+#task-list li button {
+    padding: 0.4rem 0.8rem;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: opacity 0.3s;
+}
+
+#task-list li button:hover {
+    opacity: 0.8;
+}
+
+.btn-complete {
+    background: #2ecc71;
+    color: white;
+}
+
+.btn-delete {
+    background: #e74c3c;
+    color: white;
+}
+
+/* Loader */
+.loader {
+    border: 5px solid #f3f3f3;
+    border-top: 5px solid #3498db;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none; /* Hidden by default */
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }

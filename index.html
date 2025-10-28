@@ -3,37 +3,29 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daily Task Manager</title>
+    <title>Do-Do List | Daily Tasks</title>
     <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 </head>
 <body>
 
     <div class="container">
         <header>
-            <h1>Daily Task Manager</h1>
-            <p>What do you need to get done today?</p>
+            <h1>Do-Do List</h1>
+            <p>Your simple daily task manager.</p>
         </header>
 
-        <div class="chant-section">
-            <button id="get-chant-btn">✨ Get Daily Chant</button>
-            <p id="chant-display">Click the button for a motivational boost!</p>
-        </div>
-
         <form id="task-form">
-            <input 
-                type="text" 
-                id="task-input" 
-                placeholder="e.g., Finish my report" 
-                autocomplete="off"
-            >
+            <input type="text" id="task-input" placeholder="What do you need to do?" required autocomplete="off">
             <button type="submit">Add Task</button>
         </form>
 
-        <main>
+        <div class="task-list-container">
+            <div id="loader" class="loader"></div>
             <ul id="task-list">
-                <!-- Tasks will be dynamically added here -->
+                <!-- Tasks will be dynamically inserted here -->
             </ul>
-        </main>
+        </div>
     </div>
 
     <script src="script.js"></script>
