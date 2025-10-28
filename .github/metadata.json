@@ -1,0 +1,5 @@
+{
+  "name": "DevNews AI Chatbot",
+  "description": "An AI-powered chatbot that delivers the latest news in AI for developers, complete with tool explanations and code examples.",
+  "requestFramePermissions": []
+}
