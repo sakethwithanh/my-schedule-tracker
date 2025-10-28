@@ -1,0 +1,35 @@
+/* ... (paste all the previous CSS here) ... */
+
+/* Chant Section Styles */
+.chant-section {
+    text-align: center;
+    margin-bottom: 25px;
+    padding: 20px;
+    background-color: #eaf5ff;
+    border: 1px dashed #3498db;
+    border-radius: 8px;
+}
+
+#get-chant-btn {
+    background-color: #2ecc71;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    margin-bottom: 15px;
+    transition: background-color 0.3s;
+}
+
+#get-chant-btn:hover {
+    background-color: #27ae60;
+}
+
+#chant-display {
+    font-style: italic;
+    color: #2c3e50;
+    line-height: 1.6;
+    min-height: 40px; /* Prevents layout shift */
+}
