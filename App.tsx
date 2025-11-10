@@ -9,7 +9,7 @@ import { GithubIcon, LinkedinIcon, MailIcon, PhoneIcon } from './components/Icon
 import { MatrixBackground } from './components/MatrixBackground';
 import { ProfileCard } from './components/ProfileCard';
 import { VerticalNav } from './components/VerticalNav';
-
+// test
 const resumeData: {
   name: string;
   title: string;
